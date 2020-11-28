@@ -42,6 +42,7 @@ class NukiBridge(object):
         self.__api_url = f"http://{hostname}:{port}"
         self.secure = secure
         self.requests_timeout = timeout
+        self.auth_timeout = 30 # The bridge times out in 30s https://developer.nuki.io/page/nuki-bridge-http-api-1-12/4/#heading--auth
         self._json = None
         self.token = token
 
@@ -112,7 +113,7 @@ class NukiBridge(object):
 
     def auth(self):
         url = f"{self.__api_url}/auth"
-        result = requests.get(url, timeout=self.requests_timeout)
+        result = requests.get(url, timeout=self.auth_timeout)
         result.raise_for_status()
         data = result.json()
         if not data.get("success", False):
