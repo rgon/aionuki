@@ -29,6 +29,14 @@ class NukiLock(NukiDevice):
     def door_sensor_state_name(self):
         return self._json.get("doorsensorStateName")
 
+    @property
+    def battery_charge(self):
+        return self._json.get("batteryChargeState")
+
+    @property
+    def battery_critical_keypad(self):
+        return self._json.get("keypadBatteryCritical")
+
     async def lock(self, block=False):
         return await self._bridge.lock(nuki_id=self.nuki_id, block=block)
 
