@@ -222,7 +222,7 @@ class NukiBridge(object):
     async def callback_remove(self, callback_id):
         return await self.__rq("callback/remove", {"id": callback_id})
 
-    async def callback(self, data):
+    async def interpret_callback(self, data):
         # {'deviceType': 0, 'nukiId': 490318788, 'mode': 2, 'state': 3, 'stateName': 'unlocked', 'batteryCritical': False, 'batteryCharging': False, 'batteryChargeState': 70, 'doorsensorState': 3, 'doorsensorStateName': 'door opened'}
         await self.getDeviceFromManagedDevices(data.get("nukiId")).update(
             {k: v for k, v in data.items() if k != "nukiId"}

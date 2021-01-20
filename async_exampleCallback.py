@@ -47,7 +47,7 @@ async def hello(request):
         data = await request.json()
 
         print(data)
-        await globalbr.callback(data)
+        await globalbr.interpret_callback(data)
         print((await globalbr.locks)[0].state_name)
         # return web.Response(text="Hello, world")
         return web.Response(text="ok")
