@@ -12,9 +12,7 @@ https://developer.nuki.io/uploads/short-url/a8eIacr0ku9zogOyuIuSEyw1PcA.pdf
 import logging
 
 import asyncio
-
 import aiohttp
-import requests
 
 from functools import partial
 
