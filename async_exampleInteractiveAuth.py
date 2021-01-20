@@ -6,7 +6,7 @@ import asyncio
 async def main():
     bridges = await NukiBridge.discover()
 
-    async with (bridges[0])(token="kov058") as br:
+    async with (bridges[0])(token=None) as br:
         print("Starting the interactive auth procedure.", br)
         await br.connect()
 
