@@ -43,12 +43,18 @@ globalbr = None
 @routes.post(CALLBACK_ROUTE)
 async def hello(request):
     global globalbr
-    data = await request.json()
+    if globalbr:
+        data = await request.json()
 
-    print(data)
-    await globalbr.callback(data)
-    print((await globalbr.locks)[0].state_name)
-    # return web.Response(text="Hello, world")
+        print(data)
+        await globalbr.callback(data)
+        print((await globalbr.locks)[0].state_name)
+        # return web.Response(text="Hello, world")
+        return web.Response(text="ok")
+    else:
+        return web.Response(
+            text="err: not ready yet", status=503, reason="Not ready yet."
+        )
 
 
 async def main():
@@ -78,6 +84,12 @@ async def main():
         lock = (await br.locks)[0]
         print(lock)
 
+        await br.getDevices()
+        print("closing")
+        await br.session.close()
+        print("closed")
+        await br.getDevices()
+
         # Clear pre-existing callbacks
         for i in range(0, 3):
             await br.callback_remove(i)
@@ -87,9 +99,9 @@ async def main():
 
         globalbr = br  # so it can be accessed by the server
 
-        # Keep the server running
-        while True:
-            await asyncio.sleep(3600)  # sleep forever
+    # Keep the server running
+    while True:
+        await asyncio.sleep(3600)  # sleep forever
 
 
 loop = asyncio.get_event_loop()

@@ -61,8 +61,25 @@ class NukiBridge(object):
     def __repr__(self):
         return f"<NukiBridge: {self.hostname}:{self.port} (token={self.token})>"
 
+    async def startSession(self):
+        self.session = aiohttp.ClientSession()
+        await self.session.__aenter__()
+
+    async def endSession(self, type, value, traceback):
+        await self.session.__aexit__(type, value, traceback)
+
+    async def __aenter__(self):
+        # ttysetattr etc goes here before opening and returning the file object
+        await self.startSession()
+        return self
+
+    async def __aexit__(self, type, value, traceback):
+        # Exception handling here
+        await self.endSession(type, value, traceback)
+
     @staticmethod
     async def discover():
+        # Use a sepparate session, doesn't make sense to use the cloud session for local reqs
         async with aiohttp.ClientSession() as discoverSession:
             async with discoverSession.get(
                 "https://api.nuki.io/discover/bridges"
@@ -89,16 +106,6 @@ class NukiBridge(object):
                                     *args,
                                     **kwargs,
                                 )
-
-                            async def __aenter__(self):
-                                # ttysetattr etc goes here before opening and returning the file object
-                                self.session = aiohttp.ClientSession()
-                                await self.session.__aenter__()
-                                return self
-
-                            async def __aexit__(self, type, value, traceback):
-                                # Exception handling here
-                                await self.session.__aexit__(type, value, traceback)
 
                         toret.append(BridgeInstance)
                     return toret
@@ -128,6 +135,10 @@ class NukiBridge(object):
         return info.get("bridgeType") == const.BRIDGE_TYPE_HW
 
     async def __rq(self, endpoint, params=None):
+        if self.session.closed:
+            # await self.endSession()
+            await self.startSession()
+
         url = f"{self.__api_url}/{endpoint}"
         if self.secure:
             get_params = hash_token(self.token)
