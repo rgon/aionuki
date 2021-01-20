@@ -67,7 +67,7 @@ class NukiDevice(object):
         logger.error(f'Unknown mode "{mode}" for device type {dev}')
         return "UNKNOWN"
 
-    async def update(self, aggressive=False):
+    async def update(self, json=None, aggressive=False):
         """
         Update the state of the Nuki device
         :param aggressive: Whether to aggressively poll the Bridge. If set to
@@ -75,14 +75,18 @@ class NukiDevice(object):
         last known status, thus using more battery.
         :type aggressive: bool
         """
-        if aggressive:
+        newdata = {}
+
+        if json:
+            newdata = json
+        elif aggressive:
             data = await self._bridge.lock_state(self.nuki_id)
             logger.debug(f"Received data: {data}")
             if not data.get("success", False):
                 raise NukiUpdateException(
                     f"Failed to update data for Nuki device {self.nuki_id}"
                 )
-            self._json.update({k: v for k, v in data.items() if k != "success"})
+            newdata = {k: v for k, v in data.items() if k != "success"}
         else:
             data = [
                 l
@@ -92,7 +96,9 @@ class NukiDevice(object):
             assert data, (
                 "Failed to update data for lock. " f"Nuki ID {self.nuki_id} volatized."
             )
-            self._json.update(data[0]._json)
+            newdata = data[0]._json
+
+        self._json.update(newdata)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self._json}>"

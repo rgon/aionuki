@@ -10,20 +10,20 @@ async def main():
 
     async with aiohttp.ClientSession() as session:
         br = (bridges[0])(session, token=None)  # tries logging in
-            print("Starting the interactive auth procedure.", br)
-            # await br.connect()
+        print("Starting the interactive auth procedure.", br)
+        # await br.connect()
 
-            if not br.token:
-                print("got token:", await br.auth())
-            else:
-                print("token already set up")
+        if not br.token:
+            print("got token:", await br.auth())
+        else:
+            print("token already set up")
 
-            print(await br.info())
-            lock = (await br.locks)[0]
+        print(await br.info())
+        lock = (await br.locks)[0]
 
-            print(lock)
-            await lock.update()
-            print(lock.door_sensor_state)
+        print(lock)
+        await lock.update()
+        print(lock.door_sensor_state)
 
 
 loop = asyncio.get_event_loop()

@@ -31,6 +31,10 @@ class InvalidCredentialsException(Exception):
     pass
 
 
+class BridgeUninitializedException(Exception):
+    pass
+
+
 class NukiBridge(object):
     def __init__(
         self,
@@ -51,6 +55,8 @@ class NukiBridge(object):
         self.token = token
 
         self.session = session
+
+        self.managedDevices = None  # []
 
     def __repr__(self):
         return f"<NukiBridge: {self.hostname}:{self.port} (token={self.token})>"
@@ -107,6 +113,8 @@ class NukiBridge(object):
             try:
                 await self.info()
                 logger.info("Login succeeded.")
+                await self.getDevices()
+                logger.info("Device list succeeded.")
             except aiohttp.ClientResponseError as err:
                 if err.code == 401:
                     logger.error("Could not login with provided credentials")
@@ -207,6 +215,17 @@ class NukiBridge(object):
     async def callback_remove(self, callback_id):
         return await self.__rq("callback/remove", {"id": callback_id})
 
+    async def callback(self, data):
+        # {'deviceType': 0, 'nukiId': 490318788, 'mode': 2, 'state': 3, 'stateName': 'unlocked', 'batteryCritical': False, 'batteryCharging': False, 'batteryChargeState': 70, 'doorsensorState': 3, 'doorsensorStateName': 'door opened'}
+        await self.getDeviceFromManagedDevices(data.get("nukiId")).update(
+            {k: v for k, v in data.items() if k != "nukiId"}
+        )
+        print(
+            "exitted callback",
+            self.getDeviceFromManagedDevices(data.get("nukiId"))._json,
+        )
+        print("precallback", {k: v for k, v in data.items() if k != "nukiId"})
+
     # Maintainance endpoints
 
     async def log(self, offset=0, count=100):
@@ -256,19 +275,43 @@ class NukiBridge(object):
                 dev = NukiDevice(self, data)
 
             devices.append(dev)
+
+        self.managedDevices = devices
         return devices
 
-    @property
-    async def devices(self):
-        return await self._get_devices()
+    async def getDevices(self):
+        await self._get_devices()
+        return self.managedDevices
 
     @property
     async def locks(self):
-        return await self._get_devices(device_type=const.DEVICE_TYPE_LOCK)
+        if self.managedDevices == None:
+            raise BridgeUninitializedException
+        else:
+            devices = []
+            for d in self.managedDevices:
+                if isinstance(d, NukiLock):
+                    devices.append(d)
+            return devices
 
     @property
     async def openers(self):
-        return await self._get_devices(device_type=const.DEVICE_TYPE_OPENER)
+        if self.managedDevices == None:
+            raise BridgeUninitializedException
+        else:
+            devices = []
+            for d in self.managedDevices:
+                if isinstance(d, NukiOpener):
+                    devices.append(d)
+            return devices
+
+    def getDeviceFromManagedDevices(self, nukiId):
+        if self.managedDevices == None:
+            raise BridgeUninitializedException
+        else:
+            for d in self.managedDevices:
+                if d.nuki_id == nukiId:
+                    return d
 
     async def lock(self, nuki_id, block=False):
         return await self.lock_action(
