@@ -8,7 +8,7 @@ async def main():
 
     async with (bridges[0])(token="kov058") as br:
         print("Starting the interactive auth procedure.", br)
-        # await br.connect()
+        await br.connect()
 
         if not br.token:
             print("got token:", await br.auth())

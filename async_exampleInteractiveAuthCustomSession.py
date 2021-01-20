@@ -9,14 +9,15 @@ async def main():
     print(bridges)
 
     async with aiohttp.ClientSession() as session:
-        br = (bridges[0])(session, token=None)  # tries logging in
+        br = (bridges[0])(session=session, token=None)  # tries logging in
         print("Starting the interactive auth procedure.", br)
-        # await br.connect()
 
         if not br.token:
             print("got token:", await br.auth())
         else:
             print("token already set up")
+
+        await br.connect()
 
         print(await br.info())
         lock = (await br.locks)[0]

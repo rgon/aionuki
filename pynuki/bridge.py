@@ -16,6 +16,8 @@ import asyncio
 import aiohttp
 import requests
 
+from functools import partial
+
 from . import constants as const
 from .device import NukiDevice
 from .lock import NukiLock
@@ -38,9 +40,9 @@ class BridgeUninitializedException(Exception):
 class NukiBridge(object):
     def __init__(
         self,
-        session,
         hostname,
         port=8080,
+        session=None,
         token=None,
         secure=True,
         timeout=REQUESTS_TIMEOUT,
@@ -97,17 +99,11 @@ class NukiBridge(object):
                     toret = []
                     for x in bridges:
 
-                        class BridgeInstance(NukiBridge):
-                            def __init__(self, session=None, *args, **kwargs):
-                                super().__init__(
-                                    session,
-                                    x.get("ip"),
-                                    x.get("port"),
-                                    *args,
-                                    **kwargs,
-                                )
+                        DiscoveredBridge = partial(
+                            NukiBridge, x.get("ip"), port=x.get("port")
+                        )
 
-                        toret.append(BridgeInstance)
+                        toret.append(DiscoveredBridge)
                     return toret
 
     # not using token.setter, since this would force caling .info() without await. Using self.connect(token=None) instead
@@ -231,11 +227,6 @@ class NukiBridge(object):
         await self.getDeviceFromManagedDevices(data.get("nukiId")).update(
             {k: v for k, v in data.items() if k != "nukiId"}
         )
-        print(
-            "exitted callback",
-            self.getDeviceFromManagedDevices(data.get("nukiId"))._json,
-        )
-        print("precallback", {k: v for k, v in data.items() if k != "nukiId"})
 
     # Maintainance endpoints
 
