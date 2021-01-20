@@ -29,16 +29,16 @@ class NukiLock(NukiDevice):
     def door_sensor_state_name(self):
         return self._json.get("doorsensorStateName")
 
-    def lock(self, block=False):
-        return self._bridge.lock(nuki_id=self.nuki_id, block=block)
+    async def lock(self, block=False):
+        return await self._bridge.lock(nuki_id=self.nuki_id, block=block)
 
-    def unlock(self, block=False):
-        return self._bridge.unlock(nuki_id=self.nuki_id, block=block)
+    async def unlock(self, block=False):
+        return await self._bridge.unlock(nuki_id=self.nuki_id, block=block)
 
-    def lock_n_go(self, unlatch=False, block=False):
-        return self._bridge.lock_n_go(
+    async def lock_n_go(self, unlatch=False, block=False):
+        return await self._bridge.lock_n_go(
             nuki_id=self.nuki_id, unlatch=unlatch, block=block
         )
 
-    def unlatch(self, block=False):
-        return self._bridge.unlatch(nuki_id=self.nuki_id, block=block)
+    async def unlatch(self, block=False):
+        return await self._bridge.unlatch(nuki_id=self.nuki_id, block=block)

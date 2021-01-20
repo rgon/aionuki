@@ -1,15 +1,12 @@
 #!/usr/bin/python
 from pynuki import NukiBridge  # , NukiInterface
-import aiohttp  #  TODO: remove this dependency
 import asyncio
 
 
 async def main():
     bridges = await NukiBridge.discover()
-    print(bridges)
 
-    async with aiohttp.ClientSession() as session:
-        br = bridges[0](session, token="kov058")  # tries logging in
+    async with (bridges[0])(token="kov058") as br:
         print("Starting the interactive auth procedure.", br)
         # await br.connect()
 
@@ -24,12 +21,6 @@ async def main():
         print(lock)
         await lock.update()
         print(lock.door_sensor_state)
-        # await lock.update(True)
-
-        # print("should be entered", await brInst.auth())
-        # print(await test)
-
-    print("should be exitted")
 
 
 loop = asyncio.get_event_loop()
