@@ -1,6 +1,6 @@
 #!/usr/bin/python
-from pynuki import NukiBridge  # , NukiInterface
 import asyncio
+from aionuki import NukiBridge
 
 
 async def main():
@@ -10,9 +10,9 @@ async def main():
         print("Starting the interactive auth procedure.", br)
 
         if not br.token:
-            print("got token:", await br.auth())
+            print("Received token:", await br.auth())
         else:
-            print("token already set up")
+            print("Token already set.")
 
         await br.connect()
 

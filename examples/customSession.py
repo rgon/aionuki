@@ -1,7 +1,7 @@
 #!/usr/bin/python
-from pynuki import NukiBridge  # , NukiInterface
-import aiohttp  #  TODO: remove this dependency
 import asyncio
+import aiohttp
+from aionuki import NukiBridge
 
 
 async def main():
@@ -9,13 +9,13 @@ async def main():
     print(bridges)
 
     async with aiohttp.ClientSession() as session:
-        br = (bridges[0])(session=session, token=None)  # tries logging in
+        br = (bridges[0])(session=session, token=None)
         print("Starting the interactive auth procedure.", br)
 
         if not br.token:
-            print("got token:", await br.auth())
+            print("Received token:", await br.auth())
         else:
-            print("token already set up")
+            print("Token already set.")
 
         await br.connect()
 

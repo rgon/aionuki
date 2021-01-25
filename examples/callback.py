@@ -1,24 +1,24 @@
 #!/usr/bin/python
-from pynuki import NukiBridge  # , NukiInterface
 import asyncio
-from aiohttp import web
 import socket
+from aionuki import NukiBridge
+from aiohttp import web
 
 SERVER_PORT = 7123
 CALLBACK_ROUTE = "/nuki_test_callback"
 
 """
-curl --header "Content-Type: application/json" \
-  --request POST \
+Test without having access to a bridge:
+
+curl --header "Content-Type: application/json" --request POST \
   --data '{"deviceType": 0, "nukiId": 490318788, "mode": 9, "state": 9, "stateName": "fakestate", "batteryCritical": "false", "batteryCharging": "false", "batteryChargeState": 70, "doorsensorState": 9, "doorsensorStateName": "door opened"}' \
-  http://192.168.10.20:7123/nuki_test_callback
+  http://localhost:7123/nuki_test_callback
 """
 
 
 def getLocalIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # doesn't even have to be reachable
         s.connect(("10.255.255.255", 1))
         IP = s.getsockname()[0]
     except Exception:
@@ -70,15 +70,14 @@ async def main():
     print("Server started")
 
     bridges = await NukiBridge.discover()
-
     async with (bridges[0])(token=None) as br:
         print("Starting the interactive auth procedure.", br)
-        await br.connect()
-
         if not br.token:
             print("got token:", await br.auth())
         else:
             print("token already set up")
+
+        await br.connect()
 
         print(await br.info())
         lock = (await br.locks)[0]
@@ -96,7 +95,7 @@ async def main():
         await br.callback_add(callbackUrl)
         print(await br.callback_list())
 
-        globalbr = br  # so it can be accessed by the server
+        globalbr = br  # so it can be accessed by the server callback without needing to set the route in context.
 
     # Keep the server running
     while True:

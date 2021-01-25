@@ -2,15 +2,14 @@ from setuptools import find_packages, setup
 
 
 setup(
-    name="pynuki",
-    version="1.4.0",
+    name="aionuki",
+    version="2.0.0",
     license="GPL3",
-    description="Python bindings for nuki.io bridges",
+    description="Asynchronous python bindings for nuki.io bridges.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    author="Philipp Schmitt",
-    author_email="philipp@schmitt.co",
-    url="https://github.com/pschmitt/pynuki",
+    author="Gonzalo Ruiz",
+    url="https://github.com/rgon/aionuki",
     packages=find_packages(),
     install_requires=["requests"],
 )
