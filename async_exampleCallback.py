@@ -91,8 +91,7 @@ async def main():
         await br.getDevices()
 
         # Clear pre-existing callbacks
-        for i in range(0, 3):
-            await br.callback_remove(i)
+        await br.callback_remove_all()
 
         await br.callback_add(callbackUrl)
         print(await br.callback_list())

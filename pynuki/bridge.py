@@ -2,11 +2,13 @@
 # coding: utf-8
 
 """
-Based on the Bridge API version 1.10
+Developed following the Nuki Bridge API version 1.11 specification.
+
+TODO: v1.12 support
 
 Documentation:
 https://developer.nuki.io/t/bridge-http-api/26
-https://developer.nuki.io/uploads/short-url/a8eIacr0ku9zogOyuIuSEyw1PcA.pdf
+https://developer.nuki.io/uploads/short-url/5tLp76dEJ1RYfkSUKxFTUSeyJNg.pdf
 """
 
 import logging
@@ -21,18 +23,10 @@ from .device import NukiDevice
 from .lock import NukiLock
 from .opener import NukiOpener
 from .utils import hash_token, logger
-
+from .exceptions import BridgeUninitializedException, InvalidCredentialsException
 
 # Default values
 REQUESTS_TIMEOUT = 5
-
-
-class InvalidCredentialsException(Exception):
-    pass
-
-
-class BridgeUninitializedException(Exception):
-    pass
 
 
 class NukiBridge(object):
@@ -104,6 +98,10 @@ class NukiBridge(object):
                         toret.append(DiscoveredBridge)
                     return toret
 
+    @property
+    def bridgeId(self):
+        return f"{self.hostname}:{self.port}"
+
     # not using token.setter, since this would force caling .info() without await. Using self.connect(token=None) instead
     async def connect(self, token=None):
         if token:
@@ -129,7 +127,9 @@ class NukiBridge(object):
         return info.get("bridgeType") == const.BRIDGE_TYPE_HW
 
     async def __rq(self, endpoint, params=None):
-        if self.session.closed:
+        if self.session == None:
+            await self.startSession()
+        elif self.session.closed:
             # await self.endSession()
             await self.startSession()
 
@@ -157,21 +157,9 @@ class NukiBridge(object):
             return data
 
     async def auth(self):
-        url = f"{self.__api_url}/auth"
-        async with self.session.get(
-            url, timeout=self.auth_timeout, raise_for_status=True
-        ) as res:
-            # res.raise_for_status() # applied in session
-            data = await res.json()
-
-            if not data.get("success", False):
-                logging.warning(
-                    "Failed to authenticate against bridge. Have you pressed the button?"
-                )
-            else:
-                self.token = data.get("token")
-
-            return data
+        res = await self.__rq("auth")
+        self.token = res.get("token")
+        return self.token
 
     async def config_auth(self, enable):
         return await self.__rq("configAuth", {"enable": 1 if enable else 0})
@@ -211,7 +199,19 @@ class NukiBridge(object):
 
     # Callback endpoints
 
-    async def callback_add(self, callback_url):
+    async def callback_get_id_by_url(self, callback_url):
+        installedCalbacks = await self.callback_list()
+
+        for i in installedCalbacks["callbacks"]:
+            if i["url"] == callback_url:
+                return i
+        return -1
+
+    async def callback_add(self, callback_url, check_if_exists=True):
+        if check_if_exists:
+            if await self.callback_get_id_by_url(callback_url) != -1:
+                return {"success": True}
+
         return await self.__rq("callback/add", {"url": callback_url})
 
     async def callback_list(self):
@@ -219,6 +219,18 @@ class NukiBridge(object):
 
     async def callback_remove(self, callback_id):
         return await self.__rq("callback/remove", {"id": callback_id})
+
+    async def callback_remove_by_url(self, callback_url):
+        foundNumber = await self.callback_get_id_by_url(callback_url)
+
+        if foundNumber != -1:
+            return await self.__rq("callback/remove", {"id": foundNumber})
+        else:
+            return {"success": False}
+
+    async def callback_remove_all(self):
+        for i in range(0, 3):
+            await self.callback_remove(i)
 
     async def interpret_callback(self, data):
         # {'deviceType': 0, 'nukiId': 490318788, 'mode': 2, 'state': 3, 'stateName': 'unlocked', 'batteryCritical': False, 'batteryCharging': False, 'batteryChargeState': 70, 'doorsensorState': 3, 'doorsensorStateName': 'door opened'}
