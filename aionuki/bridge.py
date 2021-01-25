@@ -2,13 +2,7 @@
 # coding: utf-8
 
 """
-Developed following the Nuki Bridge API version 1.11 specification.
-
 TODO: v1.12 support
-
-Documentation:
-https://developer.nuki.io/t/bridge-http-api/26
-https://developer.nuki.io/uploads/short-url/5tLp76dEJ1RYfkSUKxFTUSeyJNg.pdf
 """
 
 import logging
