@@ -126,7 +126,7 @@ class NukiBridge(object):
         info = await self.info()
         return info.get("bridgeType") == const.BRIDGE_TYPE_HW
 
-    async def __rq(self, endpoint, params=None):
+    async def __rq(self, endpoint, params=None, timeout=self.requests_timeout):
         if self.session == None:
             await self.startSession()
         elif self.session.closed:
@@ -147,7 +147,7 @@ class NukiBridge(object):
         async with self.session.get(
             url,
             params=get_params_str,
-            timeout=self.requests_timeout,
+            timeout=timeout,
             raise_for_status=True,
         ) as res:
             data = await res.json()
@@ -158,7 +158,7 @@ class NukiBridge(object):
 
     async def auth(self):
         res = await self.__rq("auth")
-        self.token = res.get("token")
+        self.token = res.get("token", timeout=self.auth_timeout)
         return self.token
 
     async def config_auth(self, enable):
