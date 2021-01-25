@@ -126,7 +126,10 @@ class NukiBridge(object):
         info = await self.info()
         return info.get("bridgeType") == const.BRIDGE_TYPE_HW
 
-    async def __rq(self, endpoint, params=None, timeout=self.requests_timeout):
+    async def __rq(self, endpoint, params=None, timeout=None):
+        if timeout == None:
+            timeout = self.requests_timeout
+
         if self.session == None:
             await self.startSession()
         elif self.session.closed:
