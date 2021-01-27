@@ -154,8 +154,8 @@ class NukiBridge(object):
             return data
 
     async def auth(self):
-        res = await self.__rq("auth")
-        self.token = res.get("token", timeout=self.auth_timeout)
+        res = await self.__rq("auth", timeout=self.auth_timeout)
+        self.token = res.get("token")
         return self.token
 
     async def config_auth(self, enable):
