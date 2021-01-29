@@ -1,6 +1,6 @@
-# pynuki
+# aionuki
 
-![PyPI](https://img.shields.io/pypi/v/aionuki)
+[![PyPI](https://img.shields.io/pypi/v/aionuki)](https://pypi.org/project/aionuki/2.0.0/)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/aionuki)
 ![PyPI - License](https://img.shields.io/pypi/l/aionuki)
 ![Python Lint](https://github.com/rgon/aionuki/workflows/Python%20Lint/badge.svg)
