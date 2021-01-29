@@ -9,7 +9,7 @@ Asynchronous Python library for interacting with Nuki locks and openers. Forked 
 
 Supports automatic bridge discovery using `nuki.io` servers and interactive authentication without manually entering any token.
 
-Supports parsing callbacks and integrating the result in the object's data structure. Full support of the [Nuki API Spec v1.11](https://developer.nuki.io/t/bridge-http-api/26) [PDF Here](https://developer.nuki.io/uploads/short-url/5tLp76dEJ1RYfkSUKxFTUSeyJNg.pdf)
+Supports parsing callbacks and integrating the result in the object's data structure. Full support of the [Nuki API Spec v1.12](https://developer.nuki.io/t/bridge-http-api/26) [PDF Here](https://developer.nuki.io/uploads/short-url/5tLp76dEJ1RYfkSUKxFTUSeyJNg.pdf)
 
 ## Installation
 
