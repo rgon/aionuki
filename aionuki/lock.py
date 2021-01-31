@@ -8,7 +8,30 @@ from .utils import logger
 class NukiLock(NukiDevice):
     @property
     def is_locked(self):
-        return self.state == const.STATE_LOCK_LOCKED
+        # Return None if unknown
+        # https://github.com/home-assistant/core/blob/dev/homeassistant/components/lock/__init__.py
+        if self.state == const.STATE_LOCK_LOCKED:
+            return True
+        elif (
+            self.state == const.STATE_LOCK_UNLOCKED
+            or self.state == const.STATE_LOCK_UNLOCKED_LOCK_N_GO
+        ):
+            return False
+        else:
+            return None
+
+    @property
+    def is_open(self):
+        if self.door_sensor_state == const.STATE_DOORSENSOR_OPENED:
+            return True
+        elif self.door_sensor_state == const.STATE_DOORSENSOR_CLOSED:
+            return False
+        else:
+            return None
+
+    @property
+    def is_lockngo_in_progress(self):
+        return self.state == const.STATE_LOCK_UNLOCKED_LOCK_N_GO
 
     @property
     def is_door_sensor_activated(self):
